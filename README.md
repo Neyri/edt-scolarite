@@ -1,1 +1,1 @@
-#EDT scolarit‚ to google calendar 
+# EDT scolaritÃ© to google calendar 
