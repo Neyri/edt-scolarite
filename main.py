@@ -1,10 +1,10 @@
-import get_scolarite_edt
-import insert_agenda
+from edt import *
+from agenda import *
 import os
 import datetime
-import extract_edt
 from httplib2 import Http
 from oauth2client import file, client, tools
+from check_window import *
 
 
 def get_current_monday():
@@ -16,30 +16,48 @@ def get_current_monday():
     monday = ', '.join([year, week_nb, day])
     format = '%Y, %U, %w'
     monday = datetime.datetime.strptime(monday, format)
-    return monday.strftime('%Y-%m-%d')
-
-
-def get_monday_from_filename(file_name):
-    return file_name.split('_')[1].split('.')[0]
+    return monday
 
 
 def main():
-    if 'source' not in os.listdir():
-        os.mkdir('source')
-    # get_scolarite_edt.main()
-    dir = 'source/'
-    sources = os.listdir(dir)
+    """
+        x extract all events from scolarité
+        x build a calendar with all the events upcoming
+        x get all the upcoming events
+        - format upcoming events
+        - create a list of actions to do
+            insert
+            update
+            delete
+        - ask the user if he agrees
+        - do the actions
+    """
+    edt_file = 'edt.json'
+    edt_gg_file = 'edt_gg.json'
+    edt = EDT()
+    # edt.access_edt()
+    # edt.extract_edt()
+    # edt.save(edt_file)
+    edt.open(edt_file)
+
+    last_event = edt.schedule[-1]
+    last_event_datetime = last_event.end_datetime
     current_monday = get_current_monday()
-    current_week_file = 'Scolarité_' + current_monday + '.html'
-    service = insert_agenda.connect_to_agenda_api()
-    calendar_id = insert_agenda.get_calendar_edt(service)
-    connectors = [service, calendar_id]
-    for source in sources:
-        if source >= current_week_file:
-            monday = get_monday_from_filename(source)
-            print("\nWeek starting on", monday)
-            edt = extract_edt.extract_edt(dir + source)
-            insert_agenda.insert_into_agenda(edt, monday, connectors)
+
+    agenda = Agenda()
+    # agenda.connect('EDT Centrale Lyon')
+    # events = agenda.get_events(current_monday, last_event_datetime)
+    edt_gg = EDT()
+    # edt_gg.create_from_google(events)
+    # edt_gg.save(edt_gg_file)
+    edt_gg.open(edt_gg_file)
+    to_insert, to_delete = edt.compare_edt(edt_gg)
+
+    print('%d event(s) to insert' % (len(to_insert))
+          if len(to_insert) > 0 else 'No events to insert')
+    print('%d event(s) to delete' % (len(to_delete))
+          if len(to_delete) > 0 else 'No events to delete')
+    User_check(to_insert, to_delete, agenda)
 
 
 if __name__ == '__main__':

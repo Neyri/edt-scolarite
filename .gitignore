@@ -1,4 +1,3 @@
-source/ 
-credentials.json 
-token.json 
-__pycache__/ 
+**/__pycache__/ 
+*.json 
+*.log 
